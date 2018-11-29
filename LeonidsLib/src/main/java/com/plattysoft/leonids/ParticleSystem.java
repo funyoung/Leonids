@@ -7,6 +7,7 @@ import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -551,18 +552,25 @@ public class ParticleSystem {
 	 * @param numParticles number of particles launched on the one shot
 	 */
 	public void oneShot(View emitter, int numParticles) {
-		oneShot(emitter, numParticles, new LinearInterpolator());
+		int[] location = new int[2];
+		emitter.getLocationInWindow(location);
+		int width = emitter.getWidth();
+		int height = emitter.getHeight();
+		oneShot(location, width, height, numParticles, new LinearInterpolator());
 	}
 
 	/**
 	 * Launches particles in one Shot using a special Interpolator
 	 *
-	 * @param emitter View from which center the particles will be emited
+	 * @param location The left-top corner of View from which center the particles will be emited
+	 * @param width The width of View from which center the particles will be emited
+	 * @param height The height View from which center the particles will be emited
 	 * @param numParticles number of particles launched on the one shot
 	 * @param interpolator the interpolator for the time
 	 */
-	public void oneShot(View emitter, int numParticles, Interpolator interpolator) {
-		configureEmitter(emitter, Gravity.CENTER);
+	public void oneShot(int[] location, int width, int height, int numParticles,
+						Interpolator interpolator) {
+		configureEmitter(location, width, height, Gravity.CENTER);
 		mActivatedParticles = 0;
 		mEmittingTime = mTimeToLive;
 		// We create particles based in the parameters
@@ -613,24 +621,29 @@ public class ParticleSystem {
 		// It works with an emision range
 		int[] location = new int[2];
 		emitter.getLocationInWindow(location);
+		int width = emitter.getWidth();
+		int height = emitter.getHeight();
+		configureEmitter(location, width, height, gravity);
+	}
 
+	private void configureEmitter(int[] location, int width, int height, int gravity) {
 		// Check horizontal gravity and set range
 		if (hasGravity(gravity, Gravity.LEFT)) {
 			mEmitterXMin = location[0] - mParentLocation[0];
 			mEmitterXMax = mEmitterXMin;
 		}
 		else if (hasGravity(gravity, Gravity.RIGHT)) {
-			mEmitterXMin = location[0] + emitter.getWidth() - mParentLocation[0];
+			mEmitterXMin = location[0] + width - mParentLocation[0];
 			mEmitterXMax = mEmitterXMin;
 		}
 		else if (hasGravity(gravity, Gravity.CENTER_HORIZONTAL)){
-			mEmitterXMin = location[0] + emitter.getWidth()/2 - mParentLocation[0];
+			mEmitterXMin = location[0] + width/2 - mParentLocation[0];
 			mEmitterXMax = mEmitterXMin;
 		}
 		else {
 			// All the range
 			mEmitterXMin = location[0] - mParentLocation[0];
-			mEmitterXMax = location[0] + emitter.getWidth() - mParentLocation[0];
+			mEmitterXMax = location[0] + width - mParentLocation[0];
 		}
 
 		// Now, vertical gravity and range
@@ -639,17 +652,17 @@ public class ParticleSystem {
 			mEmitterYMax = mEmitterYMin;
 		}
 		else if (hasGravity(gravity, Gravity.BOTTOM)) {
-			mEmitterYMin = location[1] + emitter.getHeight() - mParentLocation[1];
+			mEmitterYMin = location[1] + height - mParentLocation[1];
 			mEmitterYMax = mEmitterYMin;
 		}
 		else if (hasGravity(gravity, Gravity.CENTER_VERTICAL)){
-			mEmitterYMin = location[1] + emitter.getHeight()/2 - mParentLocation[1];
+			mEmitterYMin = location[1] + height/2 - mParentLocation[1];
 			mEmitterYMax = mEmitterYMin;
 		}
 		else {
 			// All the range
 			mEmitterYMin = location[1] - mParentLocation[1];
-			mEmitterYMax = location[1] + emitter.getHeight() - mParentLocation[1];
+			mEmitterYMax = location[1] + height - mParentLocation[1];
 		}
 	}
 
