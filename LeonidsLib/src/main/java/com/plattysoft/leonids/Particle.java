@@ -5,11 +5,13 @@ import java.util.List;
 import com.plattysoft.leonids.modifiers.ParticleModifier;
 
 import android.graphics.Bitmap;
+import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 
 public class Particle {
+    private final Camera mCamera = new Camera();
 
 	protected Bitmap mImage;
 	
@@ -85,16 +87,34 @@ public class Particle {
 		for (int i=0; i<mModifiers.size(); i++) {
 			mModifiers.get(i).apply(this, realMiliseconds);
 		}
+		updateMatrix();
 		return true;
 	}
-	
-	public void draw (Canvas c) {
+
+    private void preUpdateMatrix() {
+        mCamera.save();
+        mCamera.rotateY(mRotation);
+        //mCamera.rotateX(-mRotation);
+        mCamera.getMatrix(mMatrix);
+        mCamera.restore();
+    }
+
+    private void afterUpdateMatrix() {
+        mCamera.save();
+    }
+
+    public void draw (Canvas c) {
+		mPaint.setAlpha(mAlpha);		
+		c.drawBitmap(mImage, mMatrix, mPaint);
+	}
+
+	private void updateMatrix() {
 		mMatrix.reset();
+		preUpdateMatrix();
 		mMatrix.postRotate(mRotation, mBitmapHalfWidth, mBitmapHalfHeight);
 		mMatrix.postScale(mScale, mScale, mBitmapHalfWidth, mBitmapHalfHeight);
 		mMatrix.postTranslate(mCurrentX, mCurrentY);
-		mPaint.setAlpha(mAlpha);		
-		c.drawBitmap(mImage, mMatrix, mPaint);
+		afterUpdateMatrix();
 	}
 
 	public Particle activate(long startingMilisecond, List<ParticleModifier> modifiers) {
