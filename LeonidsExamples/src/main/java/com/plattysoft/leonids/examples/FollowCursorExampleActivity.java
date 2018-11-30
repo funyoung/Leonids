@@ -1,13 +1,12 @@
 package com.plattysoft.leonids.examples;
 
-import android.app.Activity;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 
 import com.plattysoft.leonids.ParticleSystem;
 
-public class FollowCursorExampleActivity extends Activity  {
-
+public class FollowCursorExampleActivity extends BaseDetailActivity {
 	private ParticleSystem ps;
 
 	@Override
@@ -32,6 +31,7 @@ public class FollowCursorExampleActivity extends Activity  {
 		return true;
 	}
 
-	
-	
+	@Override
+	public void onClick(View v) {
+	}
 }

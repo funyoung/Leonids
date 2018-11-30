@@ -1,15 +1,13 @@
 package com.plattysoft.leonids.examples;
 
-import com.plattysoft.leonids.ParticleSystem;
-
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.animation.AccelerateInterpolator;
 
-public class EmiterWithGravityExampleActivity extends Activity implements OnClickListener {
+import com.plattysoft.leonids.ParticleSystem;
+
+public class EmiterWithGravityExampleActivity extends BaseDetailActivity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

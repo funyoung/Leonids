@@ -1,15 +1,13 @@
 package com.plattysoft.leonids.examples;
 
-import com.plattysoft.leonids.modifiers.AlphaModifier;
-import com.plattysoft.leonids.ParticleSystem;
-import com.plattysoft.leonids.modifiers.ScaleModifier;
-
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.View.OnClickListener;
 
-public class DustExampleActivity extends Activity implements OnClickListener {
+import com.plattysoft.leonids.ParticleSystem;
+import com.plattysoft.leonids.modifiers.AlphaModifier;
+import com.plattysoft.leonids.modifiers.ScaleModifier;
+
+public class DustExampleActivity extends BaseDetailActivity  {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

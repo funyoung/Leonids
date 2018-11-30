@@ -1,14 +1,12 @@
 package com.plattysoft.leonids.examples;
 
-import com.plattysoft.leonids.ParticleSystem;
-
 import android.os.Bundle;
-import android.app.Activity;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.animation.AccelerateInterpolator;
 
-public class OneShotAdvancedExampleActivity extends Activity implements OnClickListener {
+import com.plattysoft.leonids.ParticleSystem;
+
+public class OneShotAdvancedExampleActivity extends BaseDetailActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

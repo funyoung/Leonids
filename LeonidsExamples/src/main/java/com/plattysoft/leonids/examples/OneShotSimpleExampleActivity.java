@@ -1,13 +1,11 @@
 package com.plattysoft.leonids.examples;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.View.OnClickListener;
 
 import com.plattysoft.leonids.ParticleSystem;
 
-public class OneShotSimpleExampleActivity extends Activity implements OnClickListener {
+public class OneShotSimpleExampleActivity extends BaseDetailActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
