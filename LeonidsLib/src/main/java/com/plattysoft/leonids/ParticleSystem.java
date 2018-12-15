@@ -758,9 +758,10 @@ public class ParticleSystem {
 	}
 
 
-//	private ParticleSurface mDrawingView;
-    private ParticleField mDrawingView;
+	private ParticleSurface mDrawingView;
+//    private ParticleField mDrawingView;
 	private void cleanParticleField() {
+	    mDrawingView.pause();
 		mParentView.removeView(mDrawingView);
 		mDrawingView = null;
 	}
@@ -774,15 +775,16 @@ public class ParticleSystem {
 //		mParentView.addView(mDrawingView);
 //		mDrawingView.setParticles (mActiveParticles);
 
-		mDrawingView = new ParticleField(mParentView.getContext());
-//        mDrawingView = new ParticleSurface(mParentView.getContext());
-		mDrawingView.setParticles (mActiveParticles);
+//		mDrawingView = new ParticleField(mParentView.getContext());
+        mDrawingView = new ParticleSurface(mParentView.getContext());
+//		mDrawingView.setParticles (mActiveParticles);
 		mParentView.addView(mDrawingView);
 
-//		mDrawingView.resume();
+		mDrawingView.resume();
 	}
 
 	private void updateParticleField() {
-		mDrawingView.postInvalidate();
+//		mDrawingView.postInvalidate();
+        mDrawingView.setParticles (mActiveParticles);
 	}
 }
