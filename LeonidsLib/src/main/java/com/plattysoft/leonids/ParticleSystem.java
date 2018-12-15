@@ -42,8 +42,6 @@ public class ParticleSystem {
 	private int mMaxParticles;
 	private Random mRandom;
 
-	private ParticleField mDrawingView;
-
 	private ArrayList<Particle> mParticles;
 	private final ArrayList<Particle> mActiveParticles = new ArrayList<>();
 	private long mTimeToLive;
@@ -496,10 +494,8 @@ public class ParticleSystem {
 		mActivatedParticles = 0;
 		mParticlesPerMillisecond = particlesPerSecond/1000f;
 		// Add a full size view to the parent view
-		mDrawingView = new ParticleField(mParentView.getContext());
-		mParentView.addView(mDrawingView);
+		createParticleField();
 		mEmittingTime = -1; // Meaning infinite
-		mDrawingView.setParticles (mActiveParticles);
 		updateParticlesBeforeStartTime(particlesPerSecond);
 		mTimer = new Timer();
 		mTimer.schedule(mTimerTask, 0, TIMER_TASK_INTERVAL);
@@ -522,14 +518,13 @@ public class ParticleSystem {
 		mActivatedParticles = 0;
 		mParticlesPerMillisecond = particlesPerSecond/1000f;
 		// Add a full size view to the parent view
-		mDrawingView = new ParticleField(mParentView.getContext());
-		mParentView.addView(mDrawingView);
+		createParticleField();
 
-		mDrawingView.setParticles (mActiveParticles);
 		updateParticlesBeforeStartTime(particlesPerSecond);
 		mEmittingTime = emittingTime;
 		startAnimator(new LinearInterpolator(), emittingTime + mTimeToLive);
 	}
+
 
 	public void emit (int emitterX, int emitterY, int particlesPerSecond) {
 		configureEmitter(emitterX, emitterY);
@@ -578,9 +573,7 @@ public class ParticleSystem {
 			activateParticle(0);
 		}
 		// Add a full size view to the parent view
-		mDrawingView = new ParticleField(mParentView.getContext());
-		mParentView.addView(mDrawingView);
-		mDrawingView.setParticles(mActiveParticles);
+		createParticleField();
 		// We start a property animator that will call us to do the update
 		// Animate from 0 to timeToLiveMax
 		startAnimator(interpolator, mTimeToLive);
@@ -698,13 +691,13 @@ public class ParticleSystem {
 	}
 
 	private void onUpdate(long miliseconds) {
-		while (((mEmittingTime > 0 && miliseconds < mEmittingTime)|| mEmittingTime == -1) && // This point should emit
+		while (((mEmittingTime > 0 && miliseconds < mEmittingTime) || mEmittingTime == -1) && // This point should emit
 				!mParticles.isEmpty() && // We have particles in the pool
-				mActivatedParticles < mParticlesPerMillisecond *miliseconds) { // and we are under the number of particles that should be launched
+				mActivatedParticles < mParticlesPerMillisecond * miliseconds) { // and we are under the number of particles that should be launched
 			// Activate a new particle
 			activateParticle(miliseconds);
 		}
-		synchronized(mActiveParticles) {
+		synchronized (mActiveParticles) {
 			for (int i = 0; i < mActiveParticles.size(); i++) {
 				boolean active = mActiveParticles.get(i).update(miliseconds);
 				if (!active) {
@@ -714,15 +707,16 @@ public class ParticleSystem {
 				}
 			}
 		}
-		mDrawingView.postInvalidate();
+
+		updateParticleField();
 	}
 
 	private void cleanupAnimation() {
-		mParentView.removeView(mDrawingView);
-		mDrawingView = null;
+		cleanParticleField();
 		mParentView.postInvalidate();
 		mParticles.addAll(mActiveParticles);
 	}
+
 
 	/**
 	 * Stops emitting new particles, but will draw the existing ones until their timeToLive expire
@@ -761,5 +755,34 @@ public class ParticleSystem {
 		for (int i = 1; i <= framesCount; i++) {
 			onUpdate(frameTimeInMs * i + 1);
 		}
+	}
+
+
+//	private ParticleSurface mDrawingView;
+    private ParticleField mDrawingView;
+	private void cleanParticleField() {
+		mParentView.removeView(mDrawingView);
+		mDrawingView = null;
+	}
+
+	private void createParticleField() {
+//		mDrawingView = new ParticleField(mParentView.getContext());
+//		mParentView.addView(mDrawingView);
+//		mDrawingView.setParticles(mActiveParticles);
+//
+//		mDrawingView = new ParticleField(mParentView.getContext());
+//		mParentView.addView(mDrawingView);
+//		mDrawingView.setParticles (mActiveParticles);
+
+		mDrawingView = new ParticleField(mParentView.getContext());
+//        mDrawingView = new ParticleSurface(mParentView.getContext());
+		mDrawingView.setParticles (mActiveParticles);
+		mParentView.addView(mDrawingView);
+
+//		mDrawingView.resume();
+	}
+
+	private void updateParticleField() {
+		mDrawingView.postInvalidate();
 	}
 }
