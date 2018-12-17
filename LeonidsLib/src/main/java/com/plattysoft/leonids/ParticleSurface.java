@@ -9,24 +9,39 @@ package com.plattysoft.leonids;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParticleSurface extends SurfaceView implements Runnable {
-    private static final long UPDATE_INTERVAL = 10;
+class ParticleSurface extends SurfaceView implements Runnable {
+    static long TIMER_TASK_INTERVAL = 33; // Default 30fps
+    //private final ParticleTimerTask mTimerTask = new ParticleTimerTask(this);
+    long mCurrentTime = 0;
+    private long mEmittingTime;
+
+    private WeakReference<ParticleSystem> mPs;
+
+
+    //    private static final long UPDATE_INTERVAL = 10;
+//    private final List<Particle> particles = new ArrayList<>();
+
+    private List<Particle> mParticles = new ArrayList<>();
+    private final List<Particle> mActiveParticles = new ArrayList<>();
+
+
     private Thread updateThread;
     private SurfaceHolder surfaceHolder;
-
     volatile private boolean shouldRun = true;
     volatile private boolean isTouched = false;
-
-
-    private final List<Particle> particles = new ArrayList<>();
 
 
     public ParticleSurface(Context context) {
@@ -37,12 +52,12 @@ public class ParticleSurface extends SurfaceView implements Runnable {
         this(context, attrs, 0);
     }
 
+
     public ParticleSurface(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         shouldRun = true;
         surfaceHolder = getHolder();
     }
-
 
     @SuppressLint("WrongCall")
     public void run() {
@@ -63,25 +78,26 @@ public class ParticleSurface extends SurfaceView implements Runnable {
 
             // sleep
             try {
-                Thread.sleep(UPDATE_INTERVAL);
+                Thread.sleep(TIMER_TASK_INTERVAL);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            onUpdate(mCurrentTime);
+            mCurrentTime += TIMER_TASK_INTERVAL;
         }
     }
 
-    private boolean pendingUpdate = false;
     private void drawParticles(Canvas canvas) {
-        if (!pendingUpdate || null == canvas) {
+        if ( null == canvas) {
             return;
         }
 
-        synchronized (particles) {
-            for (Particle p : particles) {
+        synchronized (mParticles) {
+            for (Particle p : mParticles) {
                 p.draw(canvas);
             }
         }
-        pendingUpdate = false;
     }
 
     public boolean isRunning() {
@@ -120,13 +136,129 @@ public class ParticleSurface extends SurfaceView implements Runnable {
         //TimerExec.onResume();
     }
 
-    public void setParticles(List<Particle> particles) {
-        synchronized (this.particles) {
-            this.particles.clear();
-            this.particles.addAll(particles);
-            pendingUpdate = true;
-        }
-
+    void setStartTime(long time) {
+        mCurrentTime = time;
     }
 
+    void stopEmitting() {
+        setEmittingTime(mCurrentTime);
+    }
+
+    void setEmittingTime(long time) {
+        mEmittingTime = time;
+    }
+
+    void initParticles(int mMaxParticles, Drawable drawable) {
+        if (drawable instanceof AnimationDrawable) {
+            AnimationDrawable animation = (AnimationDrawable) drawable;
+            for (int i = 0; i < mMaxParticles; i++) {
+                mParticles.add(new AnimatedParticle(animation));
+            }
+        } else {
+            Bitmap bitmap = null;
+            if (drawable instanceof BitmapDrawable) {
+                bitmap = ((BitmapDrawable) drawable).getBitmap();
+            } else {
+                bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                        drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+                drawable.draw(canvas);
+            }
+            initParticles(mMaxParticles, bitmap);
+//            for (int i = 0; i < mMaxParticles; i++) {
+//                mParticles.add(new Particle(bitmap));
+//            }
+        }
+    }
+
+    void initParticles(int mMaxParticles, Bitmap bitmap) {
+        for (int i = 0; i < mMaxParticles; i++) {
+            mParticles.add(new Particle(bitmap));
+        }
+    }
+
+//    public void setParticles(List<Particle> particles) {
+//        synchronized (this.particles) {
+//            this.particles.clear();
+//            this.particles.addAll(particles);
+//            pendingUpdate = true;
+//        }
+//
+//    }
+
+    private void updateParticleField() {
+//		mDrawingView.postInvalidate();
+        //mDrawingView.setParticles(mActiveParticles);
+    }
+
+    void updateParticlesBeforeStartTime(int particlesPerSecond) {
+        if (particlesPerSecond == 0) {
+            return;
+        }
+        long currentTimeInMs = mCurrentTime / 1000;
+        long framesCount = currentTimeInMs / particlesPerSecond;
+        if (framesCount == 0) {
+            return;
+        }
+        long frameTimeInMs = mCurrentTime / framesCount;
+        for (int i = 1; i <= framesCount; i++) {
+            onUpdate(frameTimeInMs * i + 1);
+        }
+    }
+
+    void onUpdate(long miliseconds) {
+        while (((mEmittingTime > 0 && miliseconds < mEmittingTime) || mEmittingTime == -1) && // This point should emit
+                !mParticles.isEmpty() && // We have particles in the pool
+                mActivatedParticles < mParticlesPerMillisecond * miliseconds) { // and we are under the number of particles that should be launched
+            // Activate a new particle
+            activateParticle(miliseconds);
+        }
+        synchronized (mActiveParticles) {
+            for (int i = 0; i < mActiveParticles.size(); i++) {
+                boolean active = mActiveParticles.get(i).update(miliseconds);
+                if (!active) {
+                    Particle p = mActiveParticles.remove(i);
+                    i--; // Needed to keep the index at the right position
+                    mParticles.add(p);
+                }
+            }
+        }
+
+        updateParticleField();
+    }
+
+    void activateParticle(long delay) {
+        Particle p = mParticles.remove(0);
+        p.init();
+
+        // Initialization goes before configuration, scale is required before can be configured properly
+        if (mPs.get() != null) {
+            ParticleSystem ps = mPs.get();
+            ps.activate(p, delay);
+        }
+
+        mActivatedParticles++;
+        mActiveParticles.add(p);
+    }
+
+    void cleanupAnimation() {
+        mParticles.addAll(mActiveParticles);
+    }
+
+
+    private float mParticlesPerMillisecond;
+    private int mActivatedParticles;
+
+    void resetEmitting() {
+        mActivatedParticles = 0;
+    }
+    void resetEmitting(int particlesPerSecond) {
+        resetEmitting();
+        mParticlesPerMillisecond = particlesPerSecond / 1000f;
+    }
+
+    void setParticleSystem(ParticleSystem ps) {
+        mPs = new WeakReference<>(ps);
+    }
 }
