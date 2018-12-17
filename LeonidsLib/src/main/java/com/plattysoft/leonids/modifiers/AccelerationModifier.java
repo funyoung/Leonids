@@ -19,4 +19,9 @@ public class AccelerationModifier implements ParticleModifier {
 		particle.mCurrentY += mVelocityY*miliseconds*miliseconds;
 	}
 
+	@Override
+	public void preApply(Particle particle, long miliseconds) {
+
+	}
+
 }

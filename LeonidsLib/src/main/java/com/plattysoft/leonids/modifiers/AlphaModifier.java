@@ -44,4 +44,9 @@ public class AlphaModifier implements ParticleModifier {
 		}		
 	}
 
+	@Override
+	public void preApply(Particle particle, long miliseconds) {
+
+	}
+
 }

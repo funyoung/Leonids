@@ -1,14 +1,15 @@
 package com.plattysoft.leonids;
 
-import java.util.List;
-
-import com.plattysoft.leonids.modifiers.ParticleModifier;
-
 import android.graphics.Bitmap;
 import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+
+import com.plattysoft.leonids.modifiers.ParticleModifier;
+
+import java.util.List;
+import java.util.Random;
 
 public class Particle {
     private final Camera mCamera = new Camera();
@@ -17,7 +18,8 @@ public class Particle {
 	
 	public float mCurrentX;
 	public float mCurrentY;
-	
+
+	public float initialScale = 1f;
 	public float mScale = 1f;
 	public int mAlpha = 255;
 	
@@ -30,6 +32,17 @@ public class Particle {
 
 	public float mAccelerationX;
 	public float mAccelerationY;
+
+	public float mAccumulateX = 0f;
+	public float mRandom = 0f;
+	public long timeLast = 0;
+	public int nCount = 0;
+	public boolean bFirstTime = true;
+
+	public float xOldPercent = 0f;
+	public float yOldPercent = 0f;
+	public float xNewPercent = 0f;
+	public float yNewPercent = 0f;
 
 	private Matrix mMatrix;
 	private Paint mPaint;
@@ -60,8 +73,11 @@ public class Particle {
 	}
 
 	public void init() {
+		initialScale = 1;
 		mScale = 1;
-		mAlpha = 255;	
+		mAlpha = 255;
+		Random random = new Random();
+		mRandom = 1 - random.nextFloat() / 2;
 	}
 	
 	public void configure(long timeToLive, float emiterX, float emiterY) {
@@ -81,9 +97,18 @@ public class Particle {
 		if (realMiliseconds > mTimeToLive) {
 			return false;
 		}
+		// 采用加速度的方式响应传感器
+//		for (int i=0; i<mModifiers.size(); i++) {
+//			mModifiers.get(i).apply(this, realMiliseconds);
+//		}
+        for (int i=0; i<mModifiers.size(); i++) {
+            mModifiers.get(i).preApply(this, miliseconds);
+        }
+
 		mCurrentX = mInitialX+mSpeedX*realMiliseconds+mAccelerationX*realMiliseconds*realMiliseconds;
 		mCurrentY = mInitialY+mSpeedY*realMiliseconds+mAccelerationY*realMiliseconds*realMiliseconds;
 		mRotation = mInitialRotation + mRotationSpeed*realMiliseconds/1000;
+		// 采用位移的方式响应传感器
 		for (int i=0; i<mModifiers.size(); i++) {
 			mModifiers.get(i).apply(this, realMiliseconds);
 		}
@@ -108,11 +133,14 @@ public class Particle {
 		c.drawBitmap(mImage, mMatrix, mPaint);
 	}
 
+	private float getDisplayScale() {
+		return initialScale * mScale;
+	}
 	private void updateMatrix() {
 		mMatrix.reset();
-		preUpdateMatrix();
+		//preUpdateMatrix();
 		mMatrix.postRotate(mRotation, mBitmapHalfWidth, mBitmapHalfHeight);
-		mMatrix.postScale(mScale, mScale, mBitmapHalfWidth, mBitmapHalfHeight);
+		mMatrix.postScale(getDisplayScale(), getDisplayScale(), mBitmapHalfWidth, mBitmapHalfHeight);
 		mMatrix.postTranslate(mCurrentX, mCurrentY);
 		afterUpdateMatrix();
 	}

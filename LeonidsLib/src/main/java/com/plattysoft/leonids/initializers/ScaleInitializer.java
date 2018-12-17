@@ -1,8 +1,8 @@
 package com.plattysoft.leonids.initializers;
 
-import java.util.Random;
-
 import com.plattysoft.leonids.Particle;
+
+import java.util.Random;
 
 public class ScaleInitializer implements ParticleInitializer {
 
@@ -17,7 +17,7 @@ public class ScaleInitializer implements ParticleInitializer {
 	@Override
 	public void initParticle(Particle p, Random r) {
 		float scale = r.nextFloat()*(mMaxScale-mMinScale) + mMinScale;
-		p.mScale = scale;
+		p.initialScale = scale;
 	}
 
 }

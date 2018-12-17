@@ -10,6 +10,7 @@ import android.widget.ListView;
 public class ExampleListActivity extends ListActivity {
 	private final String[] sampleList = new String [] {
 			"One Shot Simple"
+			,"Snowing"
 			,"One Shot Advanced"
 			, "Emiter Simple"
 			, "Emiting on background [NEW]"
@@ -26,6 +27,7 @@ public class ExampleListActivity extends ListActivity {
 	};
 	private final Class[] activityList = new Class[] {
 			OneShotSimpleExampleActivity.class,
+			SnowExampleActivity.class,
 			OneShotAdvancedExampleActivity.class,
 			EmiterSimpleExampleActivity.class,
 			EmiterBackgroundSimpleExampleActivity.class,

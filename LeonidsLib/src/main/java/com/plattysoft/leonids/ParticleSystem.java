@@ -19,10 +19,12 @@ import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 
 import com.plattysoft.leonids.initializers.AccelerationInitializer;
+import com.plattysoft.leonids.initializers.AlphaInitializer;
 import com.plattysoft.leonids.initializers.ParticleInitializer;
 import com.plattysoft.leonids.initializers.RotationInitializer;
 import com.plattysoft.leonids.initializers.RotationSpeedInitializer;
 import com.plattysoft.leonids.initializers.ScaleInitializer;
+import com.plattysoft.leonids.initializers.SpeedModuleArrayInitializer;
 import com.plattysoft.leonids.initializers.SpeeddByComponentsInitializer;
 import com.plattysoft.leonids.initializers.SpeedModuleAndRangeInitializer;
 import com.plattysoft.leonids.modifiers.AlphaModifier;
@@ -293,6 +295,11 @@ public class ParticleSystem {
 		return this;
 	}
 
+	public ParticleSystem setSpeedModuleAndAngleRange(float acceleration, float speed, int[] angleArray) {
+		mInitializers.add(new SpeedModuleArrayInitializer(acceleration, acceleration, dpToPx(speed), dpToPx(speed), angleArray));
+		return this;
+	}
+
     /**
      * Initializes the speed components ranges that particles will be emitted. Speeds are
      * measured in density pixels per millisecond.
@@ -329,6 +336,11 @@ public class ParticleSystem {
      */
 	public ParticleSystem setScaleRange(float minScale, float maxScale) {
 		mInitializers.add(new ScaleInitializer(minScale, maxScale));
+		return this;
+	}
+
+	public ParticleSystem setAlphaRange(int minAlpha, int maxAlpha) {
+		mInitializers.add(new AlphaInitializer(minAlpha, maxAlpha));
 		return this;
 	}
 
@@ -488,7 +500,17 @@ public class ParticleSystem {
 	 */
 	public void emitWithGravity (View emitter, int gravity, int particlesPerSecond) {
 		// Setup emitter
-		configureEmitter(emitter, gravity);
+//		configureEmitter(emitter, gravity);
+
+		int[] location = new int[2];
+		emitter.getLocationInWindow(location);
+		int width = emitter.getWidth();
+		int height = emitter.getHeight();
+		emitWithGravity(location, width, height, gravity, particlesPerSecond);
+	}
+
+	public void emitWithGravity(int[] location, int width, int height, int gravity, int particlesPerSecond) {
+		configureEmitter(location, width, height, gravity);
 		startEmitting(particlesPerSecond);
 	}
 
@@ -714,7 +736,9 @@ public class ParticleSystem {
 				}
 			}
 		}
-		mDrawingView.postInvalidate();
+		if (null != mDrawingView) {
+			mDrawingView.postInvalidate();
+		}
 	}
 
 	private void cleanupAnimation() {

@@ -11,4 +11,6 @@ public interface ParticleModifier {
 	 */
 	void apply(Particle particle, long miliseconds);
 
+	void preApply(Particle particle, long miliseconds);
+
 }

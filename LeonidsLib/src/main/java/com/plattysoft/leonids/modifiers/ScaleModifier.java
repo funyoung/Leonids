@@ -13,6 +13,12 @@ public class ScaleModifier implements ParticleModifier {
 	private long mStartTime;
 	private long mDuration;
 	private float mValueIncrement;
+
+	@Override
+	public void preApply(Particle particle, long miliseconds) {
+
+	}
+
 	private Interpolator mInterpolator;
 
 	public ScaleModifier (float initialValue, float finalValue, long startMilis, long endMilis, Interpolator interpolator) {
