@@ -10,6 +10,7 @@ import android.view.Gravity;
 import com.plattysoft.leonids.initializers.ParticleInitializer;
 import com.plattysoft.leonids.modifiers.ParticleModifier;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -196,5 +197,11 @@ public class ParticleModel {
 
     void add(ParticleInitializer initializer) {
         mInitializers.add(initializer);
+    }
+
+    public void drawParticles(Canvas canvas) {
+        for (Particle particle : mActiveParticles) {
+            particle.draw(canvas);
+        }
     }
 }

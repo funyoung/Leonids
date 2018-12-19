@@ -9,5 +9,10 @@
         android:layout_gravity="bottom"
         android:background="@android:color/black"
         android:layout_width="match_parent"
-        android:layout_height="240dp" />
+        android:layout_height="240dp">
+        <com.plattysoft.leonids.surface.Playground
+            android:id="@+id/playground_surfaceview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
 </FrameLayout>
