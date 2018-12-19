@@ -22,6 +22,9 @@ public class ParticleModel {
     private long mEmittingTime;
 
 
+    private final List<ParticleModifier> mModifiers = new ArrayList<>();
+    private final List<ParticleInitializer> mInitializers = new ArrayList<>();
+
     private Random mRandom = new Random();
     private final int mMaxParticles;
     public ParticleModel(int maxParticles) {
@@ -54,8 +57,7 @@ public class ParticleModel {
         mEmittingTime = emittingTime;
     }
 
-    public void onUpdate(List<ParticleInitializer> mInitializers,
-                         List<ParticleModifier> mModifiers, long mTimeToLive, long miliseconds) {
+    public void onUpdate(long mTimeToLive, long miliseconds) {
         while (((mEmittingTime > 0 && miliseconds < mEmittingTime) || mEmittingTime == -1) && // This point should emit
                 !mParticles.isEmpty() && // We have particles in the pool
                 mActiveParticles.size() < mParticlesPerMillisecond * miliseconds) { // and we are under the number of particles that should be launched
@@ -103,8 +105,7 @@ public class ParticleModel {
         }
     }
 
-    public void onShot(List<ParticleInitializer> mInitializers,
-                       List<ParticleModifier> mModifiers, long mTimeToLive, int numParticles) {
+    public void onShot(long mTimeToLive, int numParticles) {
         // We create particles based in the parameters
         for (int i = 0; i < numParticles && i < mMaxParticles; i++) {
             activateParticle(mInitializers, mModifiers, mTimeToLive, 0);
@@ -189,4 +190,11 @@ public class ParticleModel {
         return (gravity & gravityToCheck) == gravityToCheck;
     }
 
+    void add(ParticleModifier modifier) {
+        mModifiers.add(modifier);
+    }
+
+    void add(ParticleInitializer initializer) {
+        mInitializers.add(initializer);
+    }
 }

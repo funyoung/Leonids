@@ -45,8 +45,6 @@ public class ParticleSystem {
     private long mTimeToLive;
     private long mCurrentTime = 0;
 
-    private List<ParticleModifier> mModifiers;
-    private List<ParticleInitializer> mInitializers;
     private ValueAnimator mAnimator;
     private Timer mTimer;
     private final ParticleTimerTask mTimerTask = new ParticleTimerTask(this);
@@ -77,9 +75,6 @@ public class ParticleSystem {
 
         mParentLocation = new int[2];
         setParentViewGroup(parentView);
-
-        mModifiers = new ArrayList<>();
-        mInitializers = new ArrayList<>();
 
         // Create the particles
         mTimeToLive = timeToLive;
@@ -226,12 +221,12 @@ public class ParticleSystem {
      * @param modifier modifier to be added to the ParticleSystem
      */
     public ParticleSystem addModifier(ParticleModifier modifier) {
-        mModifiers.add(modifier);
+        model.add(modifier);
         return this;
     }
 
     public ParticleSystem setSpeedRange(float speedMin, float speedMax) {
-        mInitializers.add(new SpeedModuleAndRangeInitializer(dpToPx(speedMin), dpToPx(speedMax), 0, 360));
+        addInitializer(new SpeedModuleAndRangeInitializer(dpToPx(speedMin), dpToPx(speedMax), 0, 360));
         return this;
     }
 
@@ -253,12 +248,12 @@ public class ParticleSystem {
         while (maxAngle < minAngle) {
             maxAngle += 360;
         }
-        mInitializers.add(new SpeedModuleAndRangeInitializer(dpToPx(speedMin), dpToPx(speedMax), minAngle, maxAngle));
+        addInitializer(new SpeedModuleAndRangeInitializer(dpToPx(speedMin), dpToPx(speedMax), minAngle, maxAngle));
         return this;
     }
 
     public ParticleSystem setSpeedModuleAndAngleRange(float acceleration, float speed, int[] angleArray) {
-        mInitializers.add(new SpeedModuleArrayInitializer(acceleration, acceleration, dpToPx(speed), dpToPx(speed), angleArray));
+        addInitializer(new SpeedModuleArrayInitializer(acceleration, acceleration, dpToPx(speed), dpToPx(speed), angleArray));
         return this;
     }
 
@@ -273,7 +268,7 @@ public class ParticleSystem {
      * @return This.
      */
     public ParticleSystem setSpeedByComponentsRange(float speedMinX, float speedMaxX, float speedMinY, float speedMaxY) {
-        mInitializers.add(new SpeeddByComponentsInitializer(dpToPx(speedMinX), dpToPx(speedMaxX),
+        addInitializer(new SpeeddByComponentsInitializer(dpToPx(speedMinX), dpToPx(speedMaxX),
                 dpToPx(speedMinY), dpToPx(speedMaxY)));
         return this;
     }
@@ -287,7 +282,7 @@ public class ParticleSystem {
      * @return This.
      */
     public ParticleSystem setInitialRotationRange(int minAngle, int maxAngle) {
-        mInitializers.add(new RotationInitializer(minAngle, maxAngle));
+        addInitializer(new RotationInitializer(minAngle, maxAngle));
         return this;
     }
 
@@ -300,12 +295,12 @@ public class ParticleSystem {
      * @return This.
      */
     public ParticleSystem setScaleRange(float minScale, float maxScale) {
-        mInitializers.add(new ScaleInitializer(minScale, maxScale));
+        addInitializer(new ScaleInitializer(minScale, maxScale));
         return this;
     }
 
     public ParticleSystem setAlphaRange(int minAlpha, int maxAlpha) {
-        mInitializers.add(new AlphaInitializer(minAlpha, maxAlpha));
+        addInitializer(new AlphaInitializer(minAlpha, maxAlpha));
         return this;
     }
 
@@ -317,7 +312,7 @@ public class ParticleSystem {
      * @return This.
      */
     public ParticleSystem setRotationSpeed(float rotationSpeed) {
-        mInitializers.add(new RotationSpeedInitializer(rotationSpeed, rotationSpeed));
+        addInitializer(new RotationSpeedInitializer(rotationSpeed, rotationSpeed));
         return this;
     }
 
@@ -330,7 +325,7 @@ public class ParticleSystem {
      * @return This.
      */
     public ParticleSystem setRotationSpeedRange(float minRotationSpeed, float maxRotationSpeed) {
-        mInitializers.add(new RotationSpeedInitializer(minRotationSpeed, maxRotationSpeed));
+        addInitializer(new RotationSpeedInitializer(minRotationSpeed, maxRotationSpeed));
         return this;
     }
 
@@ -347,7 +342,7 @@ public class ParticleSystem {
      * @return
      */
     public ParticleSystem setAccelerationModuleAndAndAngleRange(float minAcceleration, float maxAcceleration, int minAngle, int maxAngle) {
-        mInitializers.add(new AccelerationInitializer(dpToPx(minAcceleration), dpToPx(maxAcceleration),
+        addInitializer(new AccelerationInitializer(dpToPx(minAcceleration), dpToPx(maxAcceleration),
                 minAngle, maxAngle));
         return this;
     }
@@ -361,7 +356,7 @@ public class ParticleSystem {
      */
     public ParticleSystem addInitializer(ParticleInitializer initializer) {
         if (initializer != null) {
-            mInitializers.add(initializer);
+            model.add(initializer);
         }
         return this;
     }
@@ -377,7 +372,7 @@ public class ParticleSystem {
      * @return This.
      */
     public ParticleSystem setAcceleration(float acceleration, int angle) {
-        mInitializers.add(new AccelerationInitializer(acceleration, acceleration, angle, angle));
+        addInitializer(new AccelerationInitializer(acceleration, acceleration, angle, angle));
         return this;
     }
 
@@ -409,7 +404,7 @@ public class ParticleSystem {
      * @param interpolator         the interpolator for the fade out (default is linear)
      */
     public ParticleSystem setFadeOut(long milisecondsBeforeEnd, Interpolator interpolator) {
-        mModifiers.add(new AlphaModifier(255, 0, mTimeToLive - milisecondsBeforeEnd, mTimeToLive, interpolator));
+        model.add(new AlphaModifier(255, 0, mTimeToLive - milisecondsBeforeEnd, mTimeToLive, interpolator));
         return this;
     }
 
@@ -545,7 +540,7 @@ public class ParticleSystem {
                         Interpolator interpolator) {
         model.configureEmitter(mParentLocation, location, width, height, Gravity.CENTER);
         model.setEmittingTime(mTimeToLive);
-        model.onShot(mInitializers, mModifiers, mTimeToLive, numParticles);
+        model.onShot(mTimeToLive, numParticles);
 
         initDrawingField();
         // We start a property animator that will call us to do the update
@@ -596,7 +591,7 @@ public class ParticleSystem {
     }
 
     private void onUpdate(long miliseconds) {
-        model.onUpdate(mInitializers, mModifiers, mTimeToLive, miliseconds);
+        model.onUpdate(mTimeToLive, miliseconds);
 
         if (null != mDrawingView) {
             mDrawingView.postInvalidate();
