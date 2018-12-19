@@ -517,11 +517,8 @@ public class ParticleSystem {
 	private void startEmitting(int particlesPerSecond) {
 		mActivatedParticles = 0;
 		mParticlesPerMillisecond = particlesPerSecond/1000f;
-		// Add a full size view to the parent view
-		mDrawingView = new ParticleField(mParentView.getContext());
-		mParentView.addView(mDrawingView);
 		mEmittingTime = -1; // Meaning infinite
-		mDrawingView.setParticles (mActiveParticles);
+		initModel();
 		updateParticlesBeforeStartTime(particlesPerSecond);
 		mTimer = new Timer();
 		mTimer.schedule(mTimerTask, 0, TIMER_TASK_INTERVAL);
@@ -543,11 +540,8 @@ public class ParticleSystem {
 	private void startEmitting(int particlesPerSecond, int emittingTime) {
 		mActivatedParticles = 0;
 		mParticlesPerMillisecond = particlesPerSecond/1000f;
-		// Add a full size view to the parent view
-		mDrawingView = new ParticleField(mParentView.getContext());
-		mParentView.addView(mDrawingView);
 
-		mDrawingView.setParticles (mActiveParticles);
+		initModel();
 		updateParticlesBeforeStartTime(particlesPerSecond);
 		mEmittingTime = emittingTime;
 		startAnimator(new LinearInterpolator(), emittingTime + mTimeToLive);
@@ -599,10 +593,8 @@ public class ParticleSystem {
 		for (int i=0; i<numParticles && i<mMaxParticles; i++) {
 			activateParticle(0);
 		}
-		// Add a full size view to the parent view
-		mDrawingView = new ParticleField(mParentView.getContext());
-		mParentView.addView(mDrawingView);
-		mDrawingView.setParticles(mActiveParticles);
+
+		initModel();
 		// We start a property animator that will call us to do the update
 		// Animate from 0 to timeToLiveMax
 		startAnimator(interpolator, mTimeToLive);
@@ -785,5 +777,16 @@ public class ParticleSystem {
 		for (int i = 1; i <= framesCount; i++) {
 			onUpdate(frameTimeInMs * i + 1);
 		}
+	}
+
+
+	private ParticleModel model = new ParticleModel();
+	private void initModel() {
+		model.setParticles (mActiveParticles);
+
+		// Add a full size view to the parent view
+		mDrawingView = new ParticleField(mParentView.getContext());
+		mParentView.addView(mDrawingView);
+		mDrawingView.setModel(model);
 	}
 }
